@@ -158,6 +158,7 @@ map.addControl(new customButton());
             // You can perform further processing or send the data as needed
             freespacefair=data;
             console.log(data);
+            $("#quote-table tbody").empty();
         });
     });
 
