@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Routing Example</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Reset some default styles */
+        body, h1, h2, h3, p, ul, li {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Apply a background color to the body */
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Style the container */
+        .container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        /* Style the left container */
+        .left-container {
+            width: 48%;
+            padding-right: 2%;
+        }
+
+        /* Style the right container (map) */
+        .right-container {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            
+        }
+
+        /* Style the form */
+        form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Style form inputs with Bootstrap */
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+
+        /* Style the "Get Directions" button with Bootstrap */
+        button[type="submit"] {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Style the map */
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+
+        /* Style the polygon form */
+        #polygon-form {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        #polygon-form h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Style the "Add Row" button with Bootstrap */
+        #addRow {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 5px 10px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        #addRow:hover {
+            background-color: #0056b3;
+        }
+
+        /* Style the "Remove" button with Bootstrap */
+        .remove-row {
+            background-color: #ea0f0f;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        /* Style the table with Bootstrap */
+        #priceSlabsTable {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Style table headers with Bootstrap */
+        #priceSlabsTable th {
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        /* Style table cells with Bootstrap */
+        #priceSlabsTable td {
+            text-align: center;
+        }
+
+        .leaflet-control-custom {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        /* Style the button text */
+        .leaflet-control-custom button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        /* Style for the map dropdown */
+.map-dropdown {
+    position: absolute;
+    
+    top: 100px;
+ /* Adjust the top position as needed */
+    right: 20px; /* Adjust the right position as needed */
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    z-index: 1000;
+   
+}
+
+/* Style the form container */
+#routing-form {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Style the form title */
+#routing-form h1 {
+    font-size: larger;
+    margin-bottom: 20px;
+}
+
+/* Style form labels */
+label {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Style form inputs with Bootstrap classes */
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+/* Style the "Get Directions" button with Bootstrap classes */
+.btn-primary {
+    background-color: #007BFF;
+    color: #fff;
+    padding: 5px 5px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.polygon-container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .polygon-details {
+            padding-top: 10px;
+        }
+
+        .separator {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+
+@media screen and (max-width: 768px) {
+    /* Styles for mobile devices */
+
+    #routing-form {
+        width: 210%;
+    }
+
+    /* #map {
+       width: 210%;
+    } */
+    .top-container {
+     display: block;
+    }
+   #quote-container {
+    width: 212%;
+   }
+/* .map-dropdown {
+    top: 95%;
+} */
+  
+    
+
+    /* Add more styles as needed */
+
+   
+    #polygon-container {
+        width: 215%;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+
+
+    
+    <div class="container top-container " >
+     
+        <div class="left-container ">
+            <form id="routing-form">
+                <h1 style="font-size: larger;">Get Directions</h1>
+                <div class="form-group">
+                    <label for="start">Start Point:</label>
+                    <input type="text" id="start" class="form-control" placeholder="Enter starting location" />
+                </div>
+                <div class="form-group">
+                    <label for="destination">Destination:</label>
+                    <input type="text" id="destination" class="form-control" placeholder="Enter destination" />
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 5px;">Get Directions</button>
+            </form>
+            <div id="quote-container" style="
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+            text-align: left;
+            margin-bottom: 10px;
+        ">
+            <h2>Quote Price</h2>
+            <button id="quote-journey-btn" class="btn btn-primary btn-xs"> Quote Journey</button>
+            <div class="container">
+                <table id="quote-table" class="table table-bordered table-responsive">
+                    <thead>
+                        <tr>
+                            <th>Distance(miles)</th>
+                            <th>Fare/Mile</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table rows will be added dynamically here -->
+                    </tbody>
+                  
+                </table>
+                
+            </div>
+            <button id="submit-btn" class="btn btn-success" style="margin-top: 4px; padding: 4px;">Submit</button>
+        </div>
+
+        <button id="show-poly-details" class="btn btn-primary btn-sm" style="margin: 5px;" onclick="$('#polygon-container').show();$('#show-poly-details').hide();$('#hide-poly-details').show();">Show Polygondetails</button>
+        <button id="hide-poly-details" class="btn btn-danger btn-sm" style="display: none; margin:5px;" onclick="$('#polygon-container').hide();$('#show-poly-details').show();$('#hide-poly-details').hide();">Hide Polygondetails</button>
+
+        <div id="polygon-container" style="
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        margin-top: 20px;
+        text-align: left;
+        display: none;
+        ">
+                <h3>polygon created</h3>
+                <div id="polygon-details"></div>
+                
+               
+            </div>
+        </div>
+
+       
+        
+
+        <div class="right-container">
+            <div id="map"></div>
+            <div id="result-container" style="
+                        background-color: #f9f9f9;
+                        border-radius: 5px;
+                        padding: 20px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                        margin-top: 20px;
+                        text-align: left;
+                    ">
+                <h3>Summary Price</h3>
+                <div id="polygon-table"></div>
+            </div>
+        
+           
+        </div>
+        
+        </div>
+    
+
+
+
+  
+
+   
+        <div id="map-dropdown" class="map-dropdown" style="display: none;max-width: 350px;">
+        <div id="polygon-form-container">
+            
+            <div style="display: flex;
+            justify-content: space-around;">
+                <h3>Add Polygon Details</h3>
+                <h1 style="font-size: revert; cursor: pointer;" onclick="$('#map-dropdown').hide();">x</h1>
+
+            </div>
+            <form id="polygon-form">
+                <div class="form-group">
+                    <label for="polygonName">Polygon Name:</label>
+                    <input type="text" id="polygonName" class="form-control" placeholder="Enter polygon name" />
+                </div>
+                <div class="form-group">
+                    <label for="polygonId">Polygon ID:</label>
+                    <input type="text" id="polygonId" class="form-control" placeholder="Enter polygon ID" />
+                </div>
+                <div class="form-group">
+                    <label for="priceSlabs">Price Slabs (Distance in Miles):</label>
+                    <div class="table-responsive">
+                        <table id="priceSlabsTable" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Distance (Miles)</th>
+                                    <th>Fare/Mile</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="number" class="form-control" placeholder="Distance" /></td>
+                                    <td><input type="number" class="form-control" placeholder="Fare" /></td>
+                                    <td><button type="button" class="btn btn-danger remove-row">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm" id="addRow">Add Row</button>
+                </div>
+                <button type="submit" class="btn btn-primary" id="createPolygonButton">Add Polygon</button>
+            </form>
+        </div>
+        </div>
+   
+
+   
+
+    <!-- Include Leaflet, Bootstrap JS, and jQuery -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.3.0/turf.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>
